@@ -301,16 +301,25 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+            }
+        }
+    </script>
+
+    <script type="module">
         // ============================================
         // SUPABASE CONFIGURATION
         // ============================================
-        const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';  // Get from: Project Settings > API
-        const SUPABASE_ANON_KEY = 'sb_publishable_HEeMtmcJA8cul4KTPYp2Ng_8toMTLpm';  // Get from: Project Settings > API
+        import { createClient } from '@supabase/supabase-js';
+        
+        const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_HEeMtmcJA8cul4KTPYp2Ng_8toMTLpm';
         
         // Create Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // ============================================
         // STATE VARIABLES
@@ -462,11 +471,15 @@
                 }
                 
                 const inviteeInput = document.getElementById('invitee');
-                inviteeInput.value = referralParam;
-                inviteeInput.disabled = true;
+                if (inviteeInput) {
+                    inviteeInput.value = referralParam;
+                    inviteeInput.disabled = true;
+                }
                 
                 const noInviteeCheckbox = document.getElementById('noInvitee');
-                noInviteeCheckbox.disabled = true;
+                if (noInviteeCheckbox) {
+                    noInviteeCheckbox.disabled = true;
+                }
             }
         }
         
@@ -490,19 +503,22 @@
             goToStep('tasks');
         });
         
-        document.getElementById('noInvitee').addEventListener('change', function() {
-            if (referralParam) {
-                this.checked = false;
-                return;
-            }
-            const inviteeInput = document.getElementById('invitee');
-            inviteeInput.disabled = this.checked;
-            if (this.checked) {
-                inviteeInput.value = '';
-                hideError('invitee-error');
-                hideError('invitee-warning');
-            }
-        });
+        const noInviteeCheckbox = document.getElementById('noInvitee');
+        if (noInviteeCheckbox) {
+            noInviteeCheckbox.addEventListener('change', function() {
+                if (referralParam) {
+                    this.checked = false;
+                    return;
+                }
+                const inviteeInput = document.getElementById('invitee');
+                inviteeInput.disabled = this.checked;
+                if (this.checked) {
+                    inviteeInput.value = '';
+                    hideError('invitee-error');
+                    hideError('invitee-warning');
+                }
+            });
+        }
         
         document.getElementById('username').addEventListener('input', function() {
             hideError('username-error');
@@ -671,6 +687,5 @@
             handleReferralLink();
         });
     </script>
-
 </body>
 </html>
