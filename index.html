@@ -3,14 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Page</title>
+    <title>Registration Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .step {
+            padding: 32px;
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .back-btn {
+            background: #6c757d;
+            margin-top: 12px;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .warning.show {
+            display: block;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .invite-link {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            margin: 20px 0;
+            border: 2px dashed #667eea;
+        }
+
+        .invite-link:hover {
+            background: #e9ecef;
+        }
+
+        .success-icon {
+            text-align: center;
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
 
-    <h1>Hello, World!</h1>
-    <p>This is my first HTML page.</p>
+    <div class="container">
+        <!-- Step 1: Home -->
+        <div class="step active" id="step-home">
+            <h2>Welcome</h2>
+            <p style="margin-bottom: 24px; color: #666;">Please complete the registration form to get started.</p>
+            <button id="startBtn">Start Registration →</button>
+        </div>
 
-    <button onclick="alert('Button clicked!')">Click Me</button>
+        <!-- Step 2: Username & Invitee -->
+        <div class="step" id="step-username">
+            <h2>Your Information</h2>
+            <div class="form-group">
+                <label>X Username *</label>
+                <input type="text" id="username" placeholder="@username" autocomplete="off">
+                <div class="error" id="username-error"></div>
+                <div class="error" id="username-exists-error"></div>
+            </div>
 
+            <div class="form-group">
+                <label>Invited By (Optional)</label>
+                <input type="text" id="invitee" placeholder="@inviter" autocomplete="off">
+                <div class="error" id="invitee-error"></div>
+                <div class="warning" id="invitee-warning"></div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="noInvitee">
+                <label for="noInvitee">I have no inviter</label>
+            </div>
+
+            <button id="continueToTasks">Continue →</button>
+            <button class="back-btn" id="backToHome">← Back</button>
+        </div>
+
+        <!-- Step 3: Tasks -->
+        <div class="step" id="step-tasks">
+            <h2>Complete Tasks</h2>
+            <div class="form-group">
+                <label>Repost Link (Optional)</label>
+                <input type="url" id="repostLink" placeholder="https://x.com/...">
+                <div class="error" id="repost-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Comment Link *</label>
+                <input type="url" id="commentLink" placeholder="https://x.com/...">
+                <div class="error" id="comment-error"></div>
+            </div>
+
+            <button id="continueToWallet">Continue →</button>
+            <button class="back-btn" id="backToUsername">← Back</button>
+        </div>
+
+        <!-- Step 4: Wallet Address -->
+        <div class="step" id="step-wallet">
+            <h2>Wallet Address</h2>
+            <div class="form-group">
+                <label>EVM Wallet Address *</label>
+                <input type="text" id="wallet" placeholder="0x...">
+                <div class="error" id="wallet-error"></div>
+                <div class="error" id="wallet-exists-error"></div>
+            </div>
+
+            <button id="submitForm">Submit →</button>
+            <button class="back-btn" id="backToTasks">← Back</button>
+        </div>
+
+        <!-- Step 5: Final -->
+        <div class="step" id="step-final">
+            <div class="success-icon">🎉</div>
+            <h2 style="text-align: center;">You're Registered!</h2>
+            <p style="text-align: center; margin: 16px 0; color: #666;">Your entry has been recorded successfully.</p>
+            
+            <div class="invite-link" id="inviteLink">
+                Click to copy your invite link
+            </div>
+            
+            <p style="text-align: center; font-size: 14px; color: #888;">Share this link to invite others</p>
+            <hr>
+            <p class="info-text">Stay tuned for updates!</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ============================================
+        // SUPABASE CONFIGURATION - REPLACE THESE VALUES
+        // ============================================
+        const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';  // Get from: Project Settings > API
+        const SUPABASE_ANON_KEY = 'sb_publishable_HEeMtmcJA8cul4KTPYp2Ng_8toMTLpm';  // Get from: Project Settings > API
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // ============================================
+        // STATE VARIABLES
+        // ============================================
+        let currentUser = '';
+        let inviteeUser = '';
+        let repostLink = '';
+        let commentLink = '';
+        let walletAddress = '';
+        let referralParam = '';
+        
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
+        const loadingDiv = document.getElementById('loading');
+        
+        // Steps
+        const steps = {
+            home: document.getElementById('step-home'),
+            username: document.getElementById('step-username'),
+            tasks: document.getElementById('step-tasks'),
+            wallet: document.getElementById('step-wallet'),
+            final: document.getElementById('step-final')
+        };
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function showLoading() {
+            loadingDiv.classList.add('show');
+        }
+        
+        function hideLoading() {
+            loadingDiv.classList.remove('show');
+        }
+        
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        function hideError(elementId) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.classList.remove('show');
+        }
+        
+        function validateUsername(username) {
+            return username.startsWith('@') && username.length > 1 && username.length <= 30;
+        }
+        
+        function validateEVMAddress(address) {
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+        
+        function validateXLink(link) {
+            return link.includes('x.com') || link.includes('twitter.com');
+        }
+        
+        function goToStep(stepName) {
+            Object.keys(steps).forEach(key => {
+                steps[key].classList.remove('active');
+            });
+            steps[stepName].classList.add('active');
+        }
+        
+        // Get URL parameter
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // ============================================
+        // SUPABASE API FUNCTIONS
+        // ============================================
+        
+        async function checkUsernameExists(username) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('username')
+                .eq('username', username)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking username:', error);
+                return 'Network error, try again later';
+            }
+            return !!data;
+        }
+        
+        async function checkWalletExists(wallet) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('wallet_address')
+                .eq('wallet_address', wallet)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking wallet:', error);
+                return false;
+            }
+            return !!data;
+        }
+        
+        async function checkInviteeExists(inviteeUsername) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('username')
+                .eq('username', inviteeUsername)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking invitee:', error);
+                return false;
+            }
+            return !!data;
+        }
+        
+        async function submitEntry(data) {
+            const { error } = await supabase
+                .from('users')
+                .insert([{
+                    username: data.username,
+                    invitee: data.invitee,
+                    wallet_address: data.walletAddress,
+                    repost_link: data.repostLink,
+                    comment_link: data.commentLink,
+                    referral_source: data.referralSource,
+                    user_agent: data.userAgent
+                }]);
+            
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    throw new Error('Username or wallet already exists');
+                }
+                throw new Error(error.message);
+            }
+            return { success: true };
+        }
+        
+        // ============================================
+        // REFERRAL HANDLING
+        // ============================================
+        
+        function handleReferralLink() {
+            const refParam = getUrlParameter('ref');
+            if (refParam) {
+                referralParam = refParam;
+                if (!referralParam.startsWith('@')) {
+                    referralParam = '@' + referralParam;
+                }
+                
+                const inviteeInput = document.getElementById('invitee');
+                inviteeInput.value = referralParam;
+                inviteeInput.disabled = true;
+                
+                const noInviteeCheckbox = document.getElementById('noInvitee');
+                noInviteeCheckbox.disabled = true;
+            }
+        }
+        
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        
+        // Navigation
+        document.getElementById('startBtn').addEventListener('click', () => {
+            goToStep('username');
+        });
+        
+        document.getElementById('backToHome').addEventListener('click', () => {
+            goToStep('home');
+        });
+        
+        document.getElementById('backToUsername').addEventListener('click', () => {
+            goToStep('username');
+        });
+        
+        document.getElementById('backToTasks').addEventListener('click', () => {
+            goToStep('tasks');
+        });
+        
+        // No invitee checkbox
+        document.getElementById('noInvitee').addEventListener('change', function() {
+            if (referralParam) {
+                this.checked = false;
+                return;
+            }
+            const inviteeInput = document.getElementById('invitee');
+            inviteeInput.disabled = this.checked;
+            if (this.checked) {
+                inviteeInput.value = '';
+                hideError('invitee-error');
+                hideError('invitee-warning');
+            }
+        });
+        
+        // Real-time validation
+        document.getElementById('username').addEventListener('input', function() {
+            hideError('username-error');
+            hideError('username-exists-error');
+        });
+        
+        document.getElementById('invitee').addEventListener('input', function() {
+            hideError('invitee-error');
+            hideError('invitee-warning');
+        });
+        
+        document.getElementById('wallet').addEventListener('input', function() {
+            hideError('wallet-error');
+            hideError('wallet-exists-error');
+        });
+        
+        // Continue to tasks
+        document.getElementById('continueToTasks').addEventListener('click', async () => {
+            currentUser = document.getElementById('username').value.trim();
+            const noInvitee = document.getElementById('noInvitee').checked;
+            
+            if (!currentUser) {
+                showError('username-error', 'Please enter your X username');
+                return;
+            }
+            
+            if (!validateUsername(currentUser)) {
+                showError('username-error', 'Username must start with @ (e.g., @username)');
+                return;
+            }
+            
+            showLoading();
+            const usernameExists = await checkUsernameExists(currentUser);
+            hideLoading();
+            
+            if (typeof usernameExists === 'string') {
+                showError('username-exists-error', usernameExists);
+                return;
+            }
+            
+            if (usernameExists) {
+                showError('username-exists-error', '❌ Username already registered!');
+                return;
+            }
+            
+            if (!noInvitee) {
+                inviteeUser = document.getElementById('invitee').value.trim();
+                
+                if (!inviteeUser && referralParam) {
+                    inviteeUser = referralParam;
+                    document.getElementById('invitee').value = referralParam;
+                }
+                
+                if (inviteeUser) {
+                    if (!validateUsername(inviteeUser)) {
+                        showError('invitee-error', 'Inviter username must start with @');
+                        return;
+                    }
+                    
+                    if (inviteeUser.toLowerCase() === currentUser.toLowerCase()) {
+                        showError('invitee-error', 'You cannot invite yourself!');
+                        return;
+                    }
+                    
+                    showLoading();
+                    const inviteeExists = await checkInviteeExists(inviteeUser);
+                    hideLoading();
+                    
+                    if (!inviteeExists) {
+                        const warningDiv = document.getElementById('invitee-warning');
+                        warningDiv.textContent = '⚠️ Inviter not found! Make sure they are registered.';
+                        warningDiv.classList.add('show');
+                    } else {
+                        hideError('invitee-warning');
+                    }
+                }
+            } else {
+                inviteeUser = '';
+            }
+            
+            goToStep('tasks');
+        });
+        
+        // Continue to wallet
+        document.getElementById('continueToWallet').addEventListener('click', () => {
+            repostLink = document.getElementById('repostLink').value.trim();
+            commentLink = document.getElementById('commentLink').value.trim();
+            
+            if (!commentLink) {
+                showError('comment-error', 'Please paste your comment link');
+                return;
+            }
+            
+            if (commentLink === repostLink && repostLink !== '') {
+                showError('comment-error', 'Please use different links');
+                return;
+            }
+            
+            if (!validateXLink(commentLink)) {
+                showError('comment-error', 'Please enter a valid X/Twitter link');
+                return;
+            }
+            
+            if (repostLink && !validateXLink(repostLink)) {
+                showError('repost-error', 'Please enter a valid X/Twitter link');
+                return;
+            }
+            
+            goToStep('wallet');
+        });
+        
+        // Submit form
+        document.getElementById('submitForm').addEventListener('click', async () => {
+            walletAddress = document.getElementById('wallet').value.trim();
+            
+            if (!validateEVMAddress(walletAddress)) {
+                showError('wallet-error', 'Invalid EVM wallet address');
+                return;
+            }
+            
+            showLoading();
+            const walletExists = await checkWalletExists(walletAddress);
+            hideLoading();
+            
+            if (walletExists) {
+                showError('wallet-exists-error', '❌ Wallet already registered!');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const submissionData = {
+                    username: currentUser,
+                    invitee: inviteeUser || 'none',
+                    repostLink: repostLink || '',
+                    commentLink: commentLink,
+                    walletAddress: walletAddress,
+                    referralSource: referralParam || 'direct',
+                    userAgent: navigator.userAgent
+                };
+                
+                await submitEntry(submissionData);
+                
+                // Generate invite link
+                const userRef = encodeURIComponent(currentUser);
+                const fullInviteLink = `${window.location.origin}${window.location.pathname}?ref=${userRef}`;
+                
+                const inviteLinkDiv = document.getElementById('inviteLink');
+                inviteLinkDiv.textContent = 'Click to copy your invite link';
+                inviteLinkDiv.onclick = function() {
+                    navigator.clipboard.writeText(fullInviteLink).then(() => {
+                        this.textContent = '✅ Link copied!';
+                        setTimeout(() => {
+                            this.textContent = 'Click to copy your invite link';
+                        }, 2000);
+                    });
+                };
+                
+                hideLoading();
+                goToStep('final');
+                
+            } catch (error) {
+                hideLoading();
+                alert(`Error: ${error.message}`);
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            handleReferralLink();
+        });
+    </script>
 </body>
 </html>
