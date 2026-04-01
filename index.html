@@ -304,11 +304,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ============================================
-        // SUPABASE CONFIGURATION - REPLACE THESE VALUES
+        // SUPABASE CONFIGURATION
         // ============================================
         const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';  // Get from: Project Settings > API
         const SUPABASE_ANON_KEY = 'sb_publishable_HEeMtmcJA8cul4KTPYp2Ng_8toMTLpm';  // Get from: Project Settings > API
         
+        // Create Supabase client
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // ============================================
@@ -326,7 +327,6 @@
         // ============================================
         const loadingDiv = document.getElementById('loading');
         
-        // Steps
         const steps = {
             home: document.getElementById('step-home'),
             username: document.getElementById('step-username'),
@@ -376,7 +376,6 @@
             steps[stepName].classList.add('active');
         }
         
-        // Get URL parameter
         function getUrlParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
@@ -442,7 +441,7 @@
                 }]);
             
             if (error) {
-                if (error.code === '23505') { // Unique violation
+                if (error.code === '23505') {
                     throw new Error('Username or wallet already exists');
                 }
                 throw new Error(error.message);
@@ -475,7 +474,6 @@
         // EVENT HANDLERS
         // ============================================
         
-        // Navigation
         document.getElementById('startBtn').addEventListener('click', () => {
             goToStep('username');
         });
@@ -492,7 +490,6 @@
             goToStep('tasks');
         });
         
-        // No invitee checkbox
         document.getElementById('noInvitee').addEventListener('change', function() {
             if (referralParam) {
                 this.checked = false;
@@ -507,7 +504,6 @@
             }
         });
         
-        // Real-time validation
         document.getElementById('username').addEventListener('input', function() {
             hideError('username-error');
             hideError('username-exists-error');
@@ -523,7 +519,6 @@
             hideError('wallet-exists-error');
         });
         
-        // Continue to tasks
         document.getElementById('continueToTasks').addEventListener('click', async () => {
             currentUser = document.getElementById('username').value.trim();
             const noInvitee = document.getElementById('noInvitee').checked;
@@ -590,7 +585,6 @@
             goToStep('tasks');
         });
         
-        // Continue to wallet
         document.getElementById('continueToWallet').addEventListener('click', () => {
             repostLink = document.getElementById('repostLink').value.trim();
             commentLink = document.getElementById('commentLink').value.trim();
@@ -618,7 +612,6 @@
             goToStep('wallet');
         });
         
-        // Submit form
         document.getElementById('submitForm').addEventListener('click', async () => {
             walletAddress = document.getElementById('wallet').value.trim();
             
@@ -651,7 +644,6 @@
                 
                 await submitEntry(submissionData);
                 
-                // Generate invite link
                 const userRef = encodeURIComponent(currentUser);
                 const fullInviteLink = `${window.location.origin}${window.location.pathname}?ref=${userRef}`;
                 
@@ -675,10 +667,10 @@
             }
         });
         
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             handleReferralLink();
         });
     </script>
+
 </body>
 </html>
