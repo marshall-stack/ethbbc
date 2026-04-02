@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bbceth - Casting Couch</title>
+    <title>Bbceth</title>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
     <link rel="icon" type="image/jpeg" href="favicon.jpg" />
     <style>
@@ -305,7 +305,6 @@
                 <input type="text" id="username" placeholder="@username" autocomplete="off">
                 <div class="error" id="username-error"></div>
                 <div class="error" id="username-exists-error"></div>
-                <div class="error" id="username-x-exists-error"></div>
             </div>
 
             <div class="form-group">
@@ -408,399 +407,373 @@
         }
     </script>
 
-    <!-- ONLY REPLACE THE CONTINUE TO TASKS EVENT LISTENER (nothing else in the file) -->
-    
     <script type="module">
-     import { createClient } from '@supabase/supabase-js';
-     
-     const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';
-     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmdXJsa3lmeHhhcndvZ3F1cWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MTc0MzEsImV4cCI6MjA5MDQ5MzQzMX0.KanUrxM5g_xSsJHJbHOEk3xRDaRxB9mNTQowngl2Z_k';
-     
-     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-     
-     let currentUser = '';
-     let inviteeUser = '';
-     let repostLink = '';
-     let commentLink = '';
-     let walletAddress = '';
-     let referralParam = '';
-    
-     let usernameCheckTimeout;
-     
-     const loadingDiv = document.getElementById('loading');
-     
-     const steps = {
-     home: document.getElementById('step-home'),
-     username: document.getElementById('step-username'),
-     tasks: document.getElementById('step-tasks'),
-     wallet: document.getElementById('step-wallet'),
-     final: document.getElementById('step-final')
-     };
-     
-     function showLoading() {
-     loadingDiv.classList.add('show');
-     }
-     
-     function hideLoading() {
-     loadingDiv.classList.remove('show');
-     }
-     
-     function showError(elementId, message) {
-     const errorDiv = document.getElementById(elementId);
-     errorDiv.textContent = message;
-     errorDiv.classList.add('show');
-     }
-     
-     function hideError(elementId) {
-     const errorDiv = document.getElementById(elementId);
-     errorDiv.classList.remove('show');
-     }
-     
-     function validateUsername(username) {
-     return username.startsWith('@') && username.length > 1 && username.length <= 30;
-     }
-     
-     function validateEVMAddress(address) {
-     return /^0x[a-fA-F0-9]{40}$/.test(address);
-     }
-     
-     function validateXLink(link) {
-     return link.includes('x.com') || link.includes('twitter.com');
-     }
-    
-     // ==================== REAL-TIME X USERNAME CHECKER ====================
-     async function checkRealXUsername(username) {
-     const clean = username.replace('@', '').trim();
-     if (!clean) return true;
-     try {
-     // Public CORS proxy (works for this purpose)
-     const res = await fetch(`https://corsproxy.io/?https://x.com/${clean}`);
-     return res.ok && res.status !== 404;
-     } catch (e) {
-     console.log('X username check failed (network/proxy)');
-     return true; // don't block if check fails
-     }
-     }
-    
-     function goToStep(stepName) {
-     Object.keys(steps).forEach(key => {
-     steps[key].classList.remove('active');
-     });
-     steps[stepName].classList.add('active');
-     }
-     
-     function getUrlParameter(name) {
-     const urlParams = new URLSearchParams(window.location.search);
-     return urlParams.get(name);
-     }
-     
-     async function checkUsernameExists(username) {
-     const { data, error } = await supabase
-     .from('users')
-     .select('username')
-     .eq('username', username)
-     .maybeSingle();
-     
-     if (error) {
-     console.error('Error checking username:', error);
-     return 'Network error, try again later';
-     }
-     return !!data;
-     }
-     
-     async function checkWalletExists(wallet) {
-     const { data, error } = await supabase
-     .from('users')
-     .select('wallet_address')
-     .eq('wallet_address', wallet)
-     .maybeSingle();
-     
-     if (error) {
-     console.error('Error checking wallet:', error);
-     return false;
-     }
-     return !!data;
-     }
-     
-     async function checkInviteeExists(inviteeUsername) {
-     const { data, error } = await supabase
-     .from('users')
-     .select('username')
-     .eq('username', inviteeUsername)
-     .maybeSingle();
-     
-     if (error) {
-     console.error('Error checking invitee:', error);
-     return false;
-     }
-     return !!data;
-     }
-     
-     async function submitEntry(data) {
-     const { error } = await supabase
-     .from('users')
-     .insert([{
-     username: data.username,
-     invitee: data.invitee,
-     wallet_address: data.walletAddress,
-     repost_link: data.repostLink,
-     comment_link: data.commentLink,
-     referral_source: data.referralSource,
-     user_agent: data.userAgent
-     }]);
-     
-     if (error) {
-     if (error.code === '23505') {
-     throw new Error('Username or wallet already exists');
-     }
-     throw new Error(error.message);
-     }
-     return { success: true };
-     }
-     
-     function handleReferralLink() {
-     const refParam = getUrlParameter('ref');
-     if (refParam) {
-     referralParam = refParam;
-     if (!referralParam.startsWith('@')) {
-     referralParam = '@' + referralParam;
-     }
-     
-     const inviteeInput = document.getElementById('invitee');
-     if (inviteeInput) {
-     inviteeInput.value = referralParam;
-     inviteeInput.disabled = true;
-     }
-     
-     const noInviteeCheckbox = document.getElementById('noInvitee');
-     if (noInviteeCheckbox) {
-     noInviteeCheckbox.disabled = true;
-     }
-     }
-     }
-     
-     // ====================== EVENT LISTENERS ======================
-     document.getElementById('startBtn').addEventListener('click', () => {
-     goToStep('username');
-     });
-     
-     document.getElementById('backToHome').addEventListener('click', () => goToStep('home'));
-     document.getElementById('backToUsername').addEventListener('click', () => goToStep('username'));
-     document.getElementById('backToTasks').addEventListener('click', () => goToStep('tasks'));
-    
-     // Real-time X username checker (on Step 2) - unchanged
-     const usernameInput = document.getElementById('username');
-     usernameInput.addEventListener('input', function() {
-     hideError('username-error');
-     hideError('username-exists-error');
-     
-     clearTimeout(usernameCheckTimeout);
-     const val = this.value.trim();
-     
-     if (val && val.startsWith('@')) {
-     usernameCheckTimeout = setTimeout(async () => {
-     const existsOnX = await checkRealXUsername(val);
-     if (!existsOnX) {
-     showError('username-error', '❌ This username does not exist on X.com');
-     }
-     }, 700);
-     }
-     });
-    
-     // Checkbox logic - unchanged
-     const noInviteeCheckbox = document.getElementById('noInvitee');
-     if (noInviteeCheckbox) {
-     noInviteeCheckbox.addEventListener('change', function() {
-     if (referralParam) {
-     this.checked = false;
-     return;
-     }
-     const inviteeInput = document.getElementById('invitee');
-     inviteeInput.disabled = this.checked;
-     if (this.checked) {
-     inviteeInput.value = '';
-     hideError('invitee-error');
-     hideError('invitee-warning');
-     }
-     });
-     }
-     
-     // Input listeners - unchanged
-     document.getElementById('invitee').addEventListener('input', () => {
-     hideError('invitee-error');
-     hideError('invitee-warning');
-     });
-     
-     document.getElementById('wallet').addEventListener('input', () => {
-     hideError('wallet-error');
-     hideError('wallet-exists-error');
-     });
-    
-     // ====================== FIXED CONTINUE TO TASKS LOGIC ======================
-     // This is the ONLY part that was changed - it now blocks movement if username doesn't exist on X
-     document.getElementById('continueToTasks').addEventListener('click', async () => {
-     currentUser = document.getElementById('username').value.trim();
-     const noInvitee = document.getElementById('noInvitee').checked;
-     
-     if (!currentUser) {
-     showError('username-error', 'Please enter your X username');
-     return;
-     }
-     
-     if (!validateUsername(currentUser)) {
-     showError('username-error', 'Username must start with @ (e.g., @username)');
-     return;
-     }
-     
-     // === NEW BLOCKING X USERNAME CHECK (this is the fix) ===
-     showLoading();
-     const existsOnX = await checkRealXUsername(currentUser);
-     
-     if (!existsOnX) {
-     hideLoading();
-     showError('username-error', '❌ This username does not exist on X.com');
-     return;
-     }
-     
-     // === Original Supabase check continues only if X username is valid ===
-     const usernameExists = await checkUsernameExists(currentUser);
-     hideLoading();
-     
-     if (typeof usernameExists === 'string') {
-     showError('username-exists-error', usernameExists);
-     return;
-     }
-     
-     if (usernameExists) {
-     showError('username-exists-error', '❌ Username already registered!');
-     return;
-     }
-     
-     if (!noInvitee) {
-     inviteeUser = document.getElementById('invitee').value.trim();
-     
-     if (!inviteeUser && referralParam) {
-     inviteeUser = referralParam;
-     document.getElementById('invitee').value = referralParam;
-     }
-     
-     if (inviteeUser) {
-     if (!validateUsername(inviteeUser)) {
-     showError('invitee-error', 'Inviter username must start with @');
-     return;
-     }
-     
-     if (inviteeUser.toLowerCase() === currentUser.toLowerCase()) {
-     showError('invitee-error', 'You cannot invite yourself!');
-     return;
-     }
-     
-     showLoading();
-     const inviteeExists = await checkInviteeExists(inviteeUser);
-     hideLoading();
-     
-     if (!inviteeExists) {
-     const warningDiv = document.getElementById('invitee-warning');
-     warningDiv.textContent = '⚠️ Inviter not found! Make sure they are registered.';
-     warningDiv.classList.add('show');
-     } else {
-     hideError('invitee-warning');
-     }
-     }
-     } else {
-     inviteeUser = '';
-     }
-     
-     goToStep('tasks');
-     });
-     
-     // Continue to Wallet (Step 3 → 4) - unchanged
-     document.getElementById('continueToWallet').addEventListener('click', () => {
-     repostLink = document.getElementById('repostLink').value.trim();
-     commentLink = document.getElementById('commentLink').value.trim();
-     
-     if (!repostLink) {
-     alert('Please paste your Quote link (Quote with your meat size)');
-     return;
-     }
-     
-     if (!commentLink) {
-     alert('Please paste your Comment link (Tag 2 smol pp frens)');
-     return;
-     }
-     
-     if (!validateXLink(repostLink)) {
-     alert('Quote link must be a valid X/Twitter link');
-     return;
-     }
-     
-     if (!validateXLink(commentLink)) {
-     alert('Tag comment link must be a valid X/Twitter link');
-     return;
-     }
-     
-     goToStep('wallet');
-     });
-     
-     // Submit Form (unchanged)
-     document.getElementById('submitForm').addEventListener('click', async () => {
-     walletAddress = document.getElementById('wallet').value.trim();
-     
-     if (!validateEVMAddress(walletAddress)) {
-     showError('wallet-error', 'Invalid EVM wallet address');
-     return;
-     }
-     
-     showLoading();
-     const walletExists = await checkWalletExists(walletAddress);
-     hideLoading();
-     
-     if (walletExists) {
-     showError('wallet-exists-error', '❌ Wallet already registered!');
-     return;
-     }
-     
-     showLoading();
-     
-     try {
-     const submissionData = {
-     username: currentUser,
-     invitee: inviteeUser || 'none',
-     repostLink: repostLink || '',
-     commentLink: commentLink,
-     walletAddress: walletAddress,
-     referralSource: referralParam || 'direct',
-     userAgent: navigator.userAgent
-     };
-     
-     await submitEntry(submissionData);
-     
-     const userRef = encodeURIComponent(currentUser);
-     const fullInviteLink = `${window.location.origin}${window.location.pathname}?ref=${userRef}`;
-     
-     const inviteLinkDiv = document.getElementById('inviteLink');
-     inviteLinkDiv.textContent = 'Click to copy your invite link';
-     inviteLinkDiv.onclick = function() {
-     navigator.clipboard.writeText(fullInviteLink).then(() => {
-     this.textContent = '✅ Link copied!';
-     setTimeout(() => {
-     this.textContent = 'Click to copy your invite link';
-     }, 2000);
-     });
-     };
-     
-     hideLoading();
-     goToStep('final');
-     
-     } catch (error) {
-     hideLoading();
-     alert(`Error: ${error.message}`);
-     }
-     });
-     
-     document.addEventListener('DOMContentLoaded', () => {
-     handleReferralLink();
-     });
+        import { createClient } from '@supabase/supabase-js';
+        
+        const SUPABASE_URL = 'https://hfurlkyfxxarwogquqeq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmdXJsa3lmeHhhcndvZ3F1cWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MTc0MzEsImV4cCI6MjA5MDQ5MzQzMX0.KanUrxM5g_xSsJHJbHOEk3xRDaRxB9mNTQowngl2Z_k';
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = '';
+        let inviteeUser = '';
+        let repostLink = '';
+        let commentLink = '';
+        let walletAddress = '';
+        let referralParam = '';
+
+        const loadingDiv = document.getElementById('loading');
+        
+        const steps = {
+            home: document.getElementById('step-home'),
+            username: document.getElementById('step-username'),
+            tasks: document.getElementById('step-tasks'),
+            wallet: document.getElementById('step-wallet'),
+            final: document.getElementById('step-final')
+        };
+        
+        function showLoading() {
+            loadingDiv.classList.add('show');
+        }
+        
+        function hideLoading() {
+            loadingDiv.classList.remove('show');
+        }
+        
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        function hideError(elementId) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.classList.remove('show');
+        }
+        
+        function validateUsername(username) {
+            return username.startsWith('@') && username.length > 1 && username.length <= 30;
+        }
+        
+        function validateEVMAddress(address) {
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+        
+        function validateXLink(link) {
+            return link.includes('x.com') || link.includes('twitter.com');
+        }
+
+        function goToStep(stepName) {
+            Object.keys(steps).forEach(key => {
+                steps[key].classList.remove('active');
+            });
+            steps[stepName].classList.add('active');
+        }
+        
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        async function checkUsernameExists(username) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('username')
+                .eq('username', username)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking username:', error);
+                return 'Network error, try again later';
+            }
+            return !!data;
+        }
+        
+        async function checkWalletExists(wallet) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('wallet_address')
+                .eq('wallet_address', wallet)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking wallet:', error);
+                return false;
+            }
+            return !!data;
+        }
+        
+        async function checkInviteeExists(inviteeUsername) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('username')
+                .eq('username', inviteeUsername)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking invitee:', error);
+                return false;
+            }
+            return !!data;
+        }
+        
+        async function submitEntry(data) {
+            const { error } = await supabase
+                .from('users')
+                .insert([{
+                    username: data.username,
+                    invitee: data.invitee,
+                    wallet_address: data.walletAddress,
+                    repost_link: data.repostLink,
+                    comment_link: data.commentLink,
+                    referral_source: data.referralSource,
+                    user_agent: data.userAgent
+                }]);
+            
+            if (error) {
+                if (error.code === '23505') {
+                    throw new Error('Username or wallet already exists');
+                }
+                throw new Error(error.message);
+            }
+            return { success: true };
+        }
+        
+        function handleReferralLink() {
+            const refParam = getUrlParameter('ref');
+            if (refParam) {
+                referralParam = refParam;
+                if (!referralParam.startsWith('@')) {
+                    referralParam = '@' + referralParam;
+                }
+                
+                const inviteeInput = document.getElementById('invitee');
+                if (inviteeInput) {
+                    inviteeInput.value = referralParam;
+                    inviteeInput.disabled = true;
+                }
+                
+                const noInviteeCheckbox = document.getElementById('noInvitee');
+                if (noInviteeCheckbox) {
+                    noInviteeCheckbox.disabled = true;
+                }
+            }
+        }
+        
+        // ====================== EVENT LISTENERS ======================
+        document.getElementById('startBtn').addEventListener('click', () => {
+            goToStep('username');
+        });
+        
+        document.getElementById('backToHome').addEventListener('click', () => goToStep('home'));
+        document.getElementById('backToUsername').addEventListener('click', () => goToStep('username'));
+        document.getElementById('backToTasks').addEventListener('click', () => goToStep('tasks'));
+
+        // Checkbox logic
+        const noInviteeCheckbox = document.getElementById('noInvitee');
+        if (noInviteeCheckbox) {
+            noInviteeCheckbox.addEventListener('change', function() {
+                if (referralParam) {
+                    this.checked = false;
+                    return;
+                }
+                const inviteeInput = document.getElementById('invitee');
+                inviteeInput.disabled = this.checked;
+                if (this.checked) {
+                    inviteeInput.value = '';
+                    hideError('invitee-error');
+                    hideError('invitee-warning');
+                }
+            });
+        }
+        
+        // Input listeners
+        document.getElementById('invitee').addEventListener('input', () => {
+            hideError('invitee-error');
+            hideError('invitee-warning');
+        });
+        
+        document.getElementById('wallet').addEventListener('input', () => {
+            hideError('wallet-error');
+            hideError('wallet-exists-error');
+        });
+
+        // Continue to Tasks (Step 2 → 3)
+        document.getElementById('continueToTasks').addEventListener('click', async () => {
+            // Reset any previous errors
+            hideError('username-error');
+            hideError('username-exists-error');
+            hideError('invitee-error');
+            hideError('invitee-warning');
+            
+            currentUser = document.getElementById('username').value.trim();
+            const noInvitee = document.getElementById('noInvitee').checked;
+            
+            if (!currentUser) {
+                showError('username-error', 'Please enter your X username');
+                return;
+            }
+            
+            if (!validateUsername(currentUser)) {
+                showError('username-error', 'Username must start with @ (e.g., @username)');
+                return;
+            }
+            
+            showLoading();
+            const usernameExists = await checkUsernameExists(currentUser);
+            hideLoading();
+            
+            if (typeof usernameExists === 'string') {
+                showError('username-exists-error', usernameExists);
+                return;
+            }
+            
+            if (usernameExists) {
+                showError('username-exists-error', '❌ Username already registered!');
+                return;
+            }
+            
+            if (!noInvitee) {
+                inviteeUser = document.getElementById('invitee').value.trim();
+                
+                if (!inviteeUser && referralParam) {
+                    inviteeUser = referralParam;
+                    document.getElementById('invitee').value = referralParam;
+                }
+                
+                if (inviteeUser) {
+                    if (!validateUsername(inviteeUser)) {
+                        showError('invitee-error', 'Inviter username must start with @');
+                        return;
+                    }
+                    
+                    if (inviteeUser.toLowerCase() === currentUser.toLowerCase()) {
+                        showError('invitee-error', 'You cannot invite yourself!');
+                        return;
+                    }
+                    
+                    showLoading();
+                    const inviteeExists = await checkInviteeExists(inviteeUser);
+                    hideLoading();
+                    
+                    if (!inviteeExists) {
+                        const warningDiv = document.getElementById('invitee-warning');
+                        warningDiv.textContent = '⚠️ Inviter not found! Make sure they are registered.';
+                        warningDiv.classList.add('show');
+                    } else {
+                        hideError('invitee-warning');
+                    }
+                }
+            } else {
+                inviteeUser = '';
+            }
+            
+            goToStep('tasks');
+        });
+        
+        // Continue to Wallet (Step 3 → 4) - now matches comic exactly
+        document.getElementById('continueToWallet').addEventListener('click', () => {
+            repostLink = document.getElementById('repostLink').value.trim();
+            commentLink = document.getElementById('commentLink').value.trim();
+            
+            // Quote is now compulsory
+            if (!repostLink) {
+                alert('Please paste your Quote link (Quote with your meat size)');
+                return;
+            }
+            
+            if (!commentLink) {
+                alert('Please paste your Comment link (Tag 2 smol pp frens)');
+                return;
+            }
+            
+            if (!validateXLink(repostLink)) {
+                alert('Quote link must be a valid X/Twitter link');
+                return;
+            }
+            
+            if (!validateXLink(commentLink)) {
+                alert('Tag comment link must be a valid X/Twitter link');
+                return;
+            }
+            
+            goToStep('wallet');
+        });
+        
+        // Submit Form
+        document.getElementById('submitForm').addEventListener('click', async () => {
+            // Clear previous wallet errors
+            hideError('wallet-error');
+            hideError('wallet-exists-error');
+            
+            walletAddress = document.getElementById('wallet').value.trim();
+            
+            if (!validateEVMAddress(walletAddress)) {
+                showError('wallet-error', 'Invalid EVM wallet address');
+                return;
+            }
+            
+            showLoading();
+            const walletExists = await checkWalletExists(walletAddress);
+            hideLoading();
+            
+            if (walletExists) {
+                showError('wallet-exists-error', '❌ Wallet already registered!');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const submissionData = {
+                    username: currentUser,
+                    invitee: inviteeUser || 'none',
+                    repostLink: repostLink || '',
+                    commentLink: commentLink,
+                    walletAddress: walletAddress,
+                    referralSource: referralParam || 'direct',
+                    userAgent: navigator.userAgent
+                };
+                
+                await submitEntry(submissionData);
+                
+                const userRef = encodeURIComponent(currentUser);
+                const fullInviteLink = `${window.location.origin}${window.location.pathname}?ref=${userRef}`;
+                
+                const inviteLinkDiv = document.getElementById('inviteLink');
+                inviteLinkDiv.textContent = 'Click to copy your invite link';
+                inviteLinkDiv.onclick = function() {
+                    navigator.clipboard.writeText(fullInviteLink).then(() => {
+                        this.textContent = '✅ Link copied!';
+                        setTimeout(() => {
+                            this.textContent = 'Click to copy your invite link';
+                        }, 2000);
+                    });
+                };
+                
+                hideLoading();
+                goToStep('final');
+                
+            } catch (error) {
+                hideLoading();
+                alert(`Error: ${error.message}`);
+            }
+        });
+        
+        // Set up GO button actions for tasks (optional, opens X links)
+        document.getElementById('quoteGoBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://x.com', '_blank');
+        });
+        
+        document.getElementById('tagGoBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://x.com', '_blank');
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            handleReferralLink();
+        });
     </script>
 </body>
 </html>
