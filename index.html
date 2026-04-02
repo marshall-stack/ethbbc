@@ -119,7 +119,7 @@
             margin-top: 10px;
             font-size: 16px;
             border-radius: 8px;
-            display: none;           /* Important: Hidden by default */
+            display: none;
         }
         
         .warning.show {
@@ -130,21 +130,19 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin: 20px 0;
+            margin: 25px 0;
             justify-content: center;
             font-size: 18px;
-            user-select: none;
         }
-        
+
         .checkbox-group input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
-            accent-color: #000;
+            width: 24px;
+            height: 24px;
             border: 4px solid #222;
+            accent-color: #000;
             cursor: pointer;
-            border-radius: 4px;
         }
-        
+
         .checkbox-group label {
             font-weight: bold;
             cursor: pointer;
@@ -192,6 +190,53 @@
         .success-icon {
             font-size: 70px;
             margin-bottom: 15px;
+        }
+
+        /* === NEW TASK STYLES (exactly like comic panel 3) === */
+        .task-item {
+            background: #eee;
+            border: 5px solid #222;
+            border-radius: 12px;
+            padding: 14px;
+            margin: 16px 0;
+        }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 4px solid #222;
+            border-radius: 12px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 17px;
+            background: #f8f8f8;
+        }
+
+        .go-btn {
+            background: #000;
+            color: white;
+            border: 3px solid #222;
+            border-radius: 8px;
+            padding: 8px 22px;
+            font-size: 16px;
+            font-family: 'Patrick Hand', cursive;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.1s;
+        }
+
+        .go-btn:hover {
+            background: #222;
         }
 
         .loading {
@@ -277,20 +322,42 @@
             <button class="back-btn" id="backToHome">← Back</button>
         </div>
 
-        <!-- Step 3: Tasks -->
+        <!-- Step 3: Hazing Tasks (exactly like comic panel 3) -->
         <div class="step" id="step-tasks">
             <div class="title">COMPLETE DEEZ HAZING TASKS</div>
             
-            <div class="form-group">
-                <label>Repost / Quote Link (Optional)</label>
-                <input type="url" id="repostLink" placeholder="Paste Quote Link">
-                <div class="error" id="repost-error"></div>
+            <!-- Task 1 -->
+            <div class="task-item">
+                <div class="task-row">
+                    <span>Follow @bbc_eth69</span>
+                    <a href="https://x.com/bbc_eth69" target="_blank" class="go-btn">GO→</a>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Comment Link *</label>
-                <input type="url" id="commentLink" placeholder="Paste Comment Link">
-                <div class="error" id="comment-error"></div>
+            <!-- Task 2 -->
+            <div class="task-item">
+                <div class="task-row">
+                    <span>Like & RT this post</span>
+                    <a href="https://x.com/PostRugPhotos/status/2017281654167830957" target="_blank" class="go-btn">GO→</a>
+                </div>
+            </div>
+
+            <!-- Task 3 (mandatory) -->
+            <div class="task-item">
+                <div class="task-row">
+                    <span>Quote with your meat size</span>
+                    <a href="#" class="go-btn" id="quoteGoBtn">GO→</a>
+                </div>
+                <input type="url" id="repostLink" class="task-input" placeholder="Paste Quote Link">
+            </div>
+
+            <!-- Task 4 -->
+            <div class="task-item">
+                <div class="task-row">
+                    <span>Tag 2 smol pp frens</span>
+                    <a href="#" class="go-btn" id="tagGoBtn">GO→</a>
+                </div>
+                <input type="url" id="commentLink" class="task-input" placeholder="Paste Comment Link">
             </div>
 
             <button id="continueToWallet">CONTINUE TO WALLET</button>
@@ -353,6 +420,8 @@
         let commentLink = '';
         let walletAddress = '';
         let referralParam = '';
+
+        let usernameCheckTimeout;
         
         const loadingDiv = document.getElementById('loading');
         
@@ -394,7 +463,21 @@
         function validateXLink(link) {
             return link.includes('x.com') || link.includes('twitter.com');
         }
-        
+
+        // ==================== REAL-TIME X USERNAME CHECKER ====================
+        async function checkRealXUsername(username) {
+            const clean = username.replace('@', '').trim();
+            if (!clean) return true;
+            try {
+                // Public CORS proxy (works for this purpose)
+                const res = await fetch(`https://corsproxy.io/?https://x.com/${clean}`);
+                return res.ok && res.status !== 404;
+            } catch (e) {
+                console.log('X username check failed (network/proxy)');
+                return true; // don't block if check fails
+            }
+        }
+
         function goToStep(stepName) {
             Object.keys(steps).forEach(key => {
                 steps[key].classList.remove('active');
@@ -492,23 +575,35 @@
             }
         }
         
-        // Event Listeners
+        // ====================== EVENT LISTENERS ======================
         document.getElementById('startBtn').addEventListener('click', () => {
             goToStep('username');
         });
         
-        document.getElementById('backToHome').addEventListener('click', () => {
-            goToStep('home');
+        document.getElementById('backToHome').addEventListener('click', () => goToStep('home'));
+        document.getElementById('backToUsername').addEventListener('click', () => goToStep('username'));
+        document.getElementById('backToTasks').addEventListener('click', () => goToStep('tasks'));
+
+        // Real-time X username checker (on Step 2)
+        const usernameInput = document.getElementById('username');
+        usernameInput.addEventListener('input', function() {
+            hideError('username-error');
+            hideError('username-exists-error');
+            
+            clearTimeout(usernameCheckTimeout);
+            const val = this.value.trim();
+            
+            if (val && val.startsWith('@')) {
+                usernameCheckTimeout = setTimeout(async () => {
+                    const existsOnX = await checkRealXUsername(val);
+                    if (!existsOnX) {
+                        showError('username-error', '❌ This username does not exist on X.com');
+                    }
+                }, 700);
+            }
         });
-        
-        document.getElementById('backToUsername').addEventListener('click', () => {
-            goToStep('username');
-        });
-        
-        document.getElementById('backToTasks').addEventListener('click', () => {
-            goToStep('tasks');
-        });
-        
+
+        // Checkbox logic
         const noInviteeCheckbox = document.getElementById('noInvitee');
         if (noInviteeCheckbox) {
             noInviteeCheckbox.addEventListener('change', function() {
@@ -526,21 +621,18 @@
             });
         }
         
-        document.getElementById('username').addEventListener('input', function() {
-            hideError('username-error');
-            hideError('username-exists-error');
-        });
-        
-        document.getElementById('invitee').addEventListener('input', function() {
+        // Input listeners
+        document.getElementById('invitee').addEventListener('input', () => {
             hideError('invitee-error');
             hideError('invitee-warning');
         });
         
-        document.getElementById('wallet').addEventListener('input', function() {
+        document.getElementById('wallet').addEventListener('input', () => {
             hideError('wallet-error');
             hideError('wallet-exists-error');
         });
-        
+
+        // Continue to Tasks (Step 2 → 3)
         document.getElementById('continueToTasks').addEventListener('click', async () => {
             currentUser = document.getElementById('username').value.trim();
             const noInvitee = document.getElementById('noInvitee').checked;
@@ -607,33 +699,36 @@
             goToStep('tasks');
         });
         
+        // Continue to Wallet (Step 3 → 4) - now matches comic exactly
         document.getElementById('continueToWallet').addEventListener('click', () => {
             repostLink = document.getElementById('repostLink').value.trim();
             commentLink = document.getElementById('commentLink').value.trim();
             
-            if (!commentLink) {
-                showError('comment-error', 'Please paste your comment link');
+            // Quote is now compulsory
+            if (!repostLink) {
+                alert('Please paste your Quote link (Quote with your meat size)');
                 return;
             }
             
-            if (commentLink === repostLink && repostLink !== '') {
-                showError('comment-error', 'Please use different links');
+            if (!commentLink) {
+                alert('Please paste your Comment link (Tag 2 smol pp frens)');
+                return;
+            }
+            
+            if (!validateXLink(repostLink)) {
+                alert('Quote link must be a valid X/Twitter link');
                 return;
             }
             
             if (!validateXLink(commentLink)) {
-                showError('comment-error', 'Please enter a valid X/Twitter link');
-                return;
-            }
-            
-            if (repostLink && !validateXLink(repostLink)) {
-                showError('repost-error', 'Please enter a valid X/Twitter link');
+                alert('Tag comment link must be a valid X/Twitter link');
                 return;
             }
             
             goToStep('wallet');
         });
         
+        // Submit Form (unchanged logic)
         document.getElementById('submitForm').addEventListener('click', async () => {
             walletAddress = document.getElementById('wallet').value.trim();
             
