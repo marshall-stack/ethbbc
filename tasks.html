@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>bbc_eth67</title>
+<link rel="icon" type="image/jpeg" href="favicon.jpg" />
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Patrick Hand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-weight: 700;
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container2 {
+  position: relative;
+  width: 32rem;
+  height: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clipboard2 {
+  width: 160%;
+  height: 200%;
+  object-fit: contain;
+}
+
+.content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 2rem;
+}
+
+.top-box {
+  background-color: black;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  width: 70%;
+  align-self: center;
+}
+
+.top-box h1 {
+  font-size: 1.575rem;
+  font-weight: 900;
+}
+
+.middle-box {
+  flex: 1;
+  margin-top: 0;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  width: 70%;
+  align-self: center;
+  gap: 0.75rem;
+}
+
+.four-boxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  flex: 1;
+}
+
+.ash-box {
+  background-color: rgba(211, 211, 211, 0.5);
+  border-radius: 0.375rem;
+  width: 100%;
+  text-align: center;
+  color: #333;
+  font-weight: 700;
+  backdrop-filter: blur(2px);
+}
+
+.ash-box.small {
+  padding: 0.6rem 0.5rem;
+  font-size: 0.945rem;
+  flex-shrink: 0;
+}
+
+.ash-box.big {
+  padding: 0.5rem 0.5rem;
+  font-size: 0.945rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.row-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #222;
+  text-align: left;
+  flex: 1;
+}
+
+.go-btn-small {
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.go-btn-small:hover {
+  opacity: 0.8;
+}
+
+.quote-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.quote-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #222;
+  flex: 1;
+  text-align: left;
+}
+
+.go-btn-big {
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.735rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.go-btn-big:hover {
+  opacity: 0.8;
+}
+
+.input-bar {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #aaa;
+  border-radius: 0.3rem;
+  font-size: 0.735rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+}
+
+.input-bar:focus {
+  outline: none;
+  border-color: #555;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.back-left-btn {
+  background-color: black;
+  color: white;
+  padding: 0.6rem 0.5rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  width: 20%;
+  cursor: pointer;
+}
+
+.back-left-btn p {
+  font-size: 0.945rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.bottom-box {
+  background-color: black;
+  color: white;
+  padding: 0.6rem 0.5rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  width: 80%;
+  cursor: pointer;
+}
+
+.bottom-box p {
+  font-size: 0.945rem;
+  font-weight: 700;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.error-msg {
+  color: #dc3545;
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+  display: none;
+  font-family: inherit;
+}
+
+.error-msg.show {
+  display: block;
+}
+
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading.show {
+  display: flex;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+</div>
+
+<div class="page">
+    <div class="container2">
+        <img src="image.png" class="clipboard2" alt="Clipboard" />
+
+        <div class="content">
+        <div class="top-box">
+            <h2>COMPLETE DEEZ HAZING TASKS</h2>
+        </div>
+
+        <div class="middle-box">
+            <div class="four-boxes">
+            <!-- Task 1: follow @bbc_eth69 -->
+            <div class="ash-box small">
+                <div class="row">
+                <span class="row-text">Follow @bbc_eth69</span>
+                <a href="https://x.com/bbc_eth67" target="_blank" class="go-btn-small">GO→</a>
+                </div>
+            </div>
+
+            <!-- Task 2: like and retweet this post -->
+            <div class="ash-box small">
+                <div class="row">
+                <span class="row-text">Like & RT this post</span>
+                <a href="https://x.com/bbc_eth67" target="_blank" class="go-btn-small">GO→</a>
+                </div>
+            </div>
+
+            <!-- Task 3: quote with your meat size -->
+            <div class="ash-box big">
+                <div class="quote-row">
+                <span class="quote-text">Quote with your meat size</span>
+                <a href="#" class="go-btn-big" id="quoteGoBtn">GO→</a>
+                </div>
+                <input type="text" id="repostLink" class="input-bar" placeholder="Paste Quote Link" />
+                <div class="error-msg" id="quote-error"></div>
+            </div>
+
+            <!-- Task 4: tag 2 smol pp frens -->
+            <div class="ash-box big">
+                <div class="quote-row">
+                <span class="quote-text">Tag 2 small pp frens</span>
+                <a href="#" class="go-btn-big" id="tagGoBtn">GO→</a>
+                </div>
+                <input type="text" id="commentLink" class="input-bar" placeholder="Paste Comment Link" />
+                <div class="error-msg" id="tag-error"></div>
+            </div>
+            </div>
+
+            <div class="button-container">
+            <a href="index.html#page2" class="back-left-btn">
+                <p><-</p>
+            </a>
+            <button id="continueToWallet" class="bottom-box">
+                <p>CONTINUE TO WALLET</p>
+            </button>
+            </div>
+        </div>
+        </div>
+  </div>
+</div>
+
+<script type="module">
+  function validateXLink(link) {
+    return link.includes('x.com') || link.includes('twitter.com');
+  }
+  
+  function saveTasksToSession(repostLink, commentLink) {
+    const existingData = sessionStorage.getItem('registrationData');
+    const data = existingData ? JSON.parse(existingData) : {};
+    data.repostLink = repostLink;
+    data.commentLink = commentLink;
+    sessionStorage.setItem('registrationData', JSON.stringify(data));
+  }
+  
+  function getFromSession() {
+    const data = sessionStorage.getItem('registrationData');
+    return data ? JSON.parse(data) : null;
+  }
+  
+  // Set up GO buttons to open X links
+  document.getElementById('quoteGoBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.open('https://x.com/bbc_eth67', '_blank');
+  });
+  
+  document.getElementById('tagGoBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.open('https://x.com/bbc_eth67', '_blank');
+  });
+  
+  // Continue to Wallet
+  document.getElementById('continueToWallet').addEventListener('click', () => {
+    const repostLink = document.getElementById('repostLink').value.trim();
+    const commentLink = document.getElementById('commentLink').value.trim();
+    
+    let hasError = false;
+    
+    // Quote is compulsory
+    if (!repostLink) {
+      document.getElementById('quote-error').textContent = 'Please paste your Quote link';
+      document.getElementById('quote-error').classList.add('show');
+      hasError = true;
+    } else if (!validateXLink(repostLink)) {
+      document.getElementById('quote-error').textContent = 'Must be a valid X/Twitter link';
+      document.getElementById('quote-error').classList.add('show');
+      hasError = true;
+    } else {
+      document.getElementById('quote-error').classList.remove('show');
+    }
+    
+    if (!commentLink) {
+      document.getElementById('tag-error').textContent = 'Please paste your Comment link';
+      document.getElementById('tag-error').classList.add('show');
+      hasError = true;
+    } else if (!validateXLink(commentLink)) {
+      document.getElementById('tag-error').textContent = 'Must be a valid X/Twitter link';
+      document.getElementById('tag-error').classList.add('show');
+      hasError = true;
+    } else {
+      document.getElementById('tag-error').classList.remove('show');
+    }
+    
+    if (!hasError) {
+      saveTasksToSession(repostLink, commentLink);
+      window.location.href = 'wallet.html';
+    }
+  });
+  
+  // Pre-fill if returning from wallet page
+  const sessionData = getFromSession();
+  if (sessionData) {
+    if (sessionData.repostLink) document.getElementById('repostLink').value = sessionData.repostLink;
+    if (sessionData.commentLink) document.getElementById('commentLink').value = sessionData.commentLink;
+  }
+</script>
+
+</body>
+</html>
