@@ -424,25 +424,7 @@ input {
     const data = sessionStorage.getItem('registrationData');
     return data ? JSON.parse(data) : null;
   }
-  
-  // Real-time X username checker
-  const usernameInput = document.getElementById('username');
-  usernameInput.addEventListener('input', function() {
-    hideError('username-error');
-    hideError('username-exists-error');
-    
-    clearTimeout(usernameCheckTimeout);
-    const val = this.value.trim();
-    
-    if (val && val.startsWith('@')) {
-      usernameCheckTimeout = setTimeout(async () => {
-        const existsOnX = await checkRealXUsername(val);
-        if (!existsOnX) {
-          showError('username-error', '❌ This username does not exist on X.com');
-        }
-      }, 700);
-    }
-  });
+
   
   // Checkbox logic
   const noInviteeCheckbox = document.getElementById('noInvitee');
